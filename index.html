@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>viabrd - 4chan Style Text Board</title>
+  <title>viabrd - 4chan Style Dark Text Board</title>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <!-- Firebase SDKs -->
@@ -12,19 +12,22 @@
   <link href="https://fonts.googleapis.com/css?family=Roboto+Mono:400,700|Noto+Sans:400,600&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bkg: #d6ecc7;
-      --post: #f0e5c8;
-      --border: #b5cda3;
-      --info: #789262;
-      --admin: #f0e5c8;
-      --admin-border: #b5cda3;
-      --button: #8fc470;
-      --button-hover: #5fa03e;
+      --bkg: #212a21;
+      --post: #2e372e;
+      --border: #5a7d5a;
+      --info: #b7e0b7;
+      --admin: #2e372e;
+      --admin-border: #5a7d5a;
+      --button: #76a876;
+      --button-hover: #456c45;
       --error: #c77;
-      --shadow: 0 2px 8px #b5cda388;
+      --shadow: 0 2px 8px #5a7d5a60;
+      --text: #e4f7db;
+      --subtext: #a7d8a7;
     }
-    body {
+    html, body {
       background: var(--bkg);
+      color: var(--text);
       font-family: 'Noto Sans', Arial, sans-serif;
       margin: 0;
       padding: 0;
@@ -35,15 +38,16 @@
       font-weight: 700;
       margin: 0;
       padding: 18px 0 8px 0;
-      text-align: center;
-      color: #789262;
+      color: var(--info);
       letter-spacing: 1px;
       font-family: 'Roboto Mono', monospace;
-      text-shadow: 0 1px 0 #fff, 0 2px 0 #b5cda3;
+      text-shadow: 0 1px 0 #222, 0 2px 0 #5a7d5a;
+      text-align: left;
+      margin-left: 22px;
     }
     .container {
       max-width: 700px;
-      margin: 0 auto;
+      margin-left: 22px;
       padding: 0 10px;
     }
     .post-form {
@@ -64,7 +68,8 @@
       border-radius: 4px;
       resize: vertical;
       padding: 8px;
-      background: #fffde9;
+      background: #212a21;
+      color: var(--text);
     }
     .post-form button {
       background: var(--button);
@@ -75,14 +80,14 @@
       font-weight: 600;
       font-size: 1em;
       cursor: pointer;
-      box-shadow: 0 1px 4px #b5cda388;
+      box-shadow: 0 1px 4px #5a7d5a88;
       transition: background 0.18s;
     }
     .post-form button:hover {
       background: var(--button-hover);
     }
     .info {
-      color: var(--info);
+      color: var(--subtext);
       font-size: 0.97em;
       margin-bottom: 2px;
       font-family: 'Roboto Mono', monospace;
@@ -103,16 +108,17 @@
     .post .info {
       margin-bottom: 7px;
       font-size: 0.97em;
-      color: var(--info);
+      color: var(--subtext);
     }
     .admin-login {
       position: fixed;
       top: 14px;
       right: 16px;
       background: var(--admin);
+      color: var(--text);
       border: 1.5px solid var(--admin-border);
       border-radius: 8px;
-      box-shadow: 0 1px 8px #78926244;
+      box-shadow: 0 1px 8px #5a7d5a44;
       padding: 12px 14px 8px 14px;
       z-index: 100;
       min-width: 170px;
@@ -126,7 +132,8 @@
       border: 1px solid var(--border);
       border-radius: 4px;
       padding: 5px;
-      background: #fffde9;
+      background: #212a21;
+      color: var(--text);
       font-family: inherit;
       font-size: 0.94em;
     }
@@ -140,7 +147,7 @@
       font-weight: 600;
       font-size: 0.97em;
       cursor: pointer;
-      box-shadow: 0 1px 4px #b5cda388;
+      box-shadow: 0 1px 4px #5a7d5a88;
       margin-top: 3px;
       transition: background 0.18s;
     }
@@ -153,29 +160,31 @@
       top: 75px;
       right: 20px;
       background: var(--admin);
+      color: var(--text);
       border: 1.5px solid var(--admin-border);
       border-radius: 8px;
-      box-shadow: 0 1px 8px #78926244;
+      box-shadow: 0 1px 8px #5a7d5a44;
       padding: 12px 12px 8px 12px;
       font-size: 0.99em;
       font-family: 'Roboto Mono', monospace;
       z-index: 101;
     }
     .pending-post {
-      background: #e2ecd0;
+      background: #253226;
       border: 1.5px solid var(--border);
       border-radius: 4px;
-      box-shadow: 0 1px 6px #b5cda388;
+      box-shadow: 0 1px 6px #5a7d5a88;
       margin: 10px 0;
       padding: 10px 12px 7px 12px;
       word-break: break-word;
       font-size: 1em;
       position: relative;
+      color: var(--text);
     }
     .pending-post .info {
       margin-bottom: 7px;
       font-size: 0.96em;
-      color: var(--info);
+      color: var(--subtext);
     }
     .pending-post .moderate-btns {
       display: flex;
@@ -191,7 +200,7 @@
       font-weight: 600;
       font-size: 0.97em;
       cursor: pointer;
-      box-shadow: 0 1px 4px #b5cda388;
+      box-shadow: 0 1px 4px #5a7d5a88;
       transition: background 0.18s;
     }
     .moderate-btns button:hover {
@@ -204,8 +213,8 @@
       background: #a33;
     }
     @media (max-width:750px) {
-      .container { max-width: 99vw; }
-      .board-title { font-size: 1.3em; }
+      .container { max-width: 99vw; margin-left: 2vw; }
+      .board-title { font-size: 1.3em; margin-left: 2vw;}
       .post, .post-form { font-size: 1em; padding-left: 7px; padding-right: 7px; }
       .admin-login, .admin-panel { max-width: 98vw; width: 180px; padding-left: 6px; padding-right: 6px; }
     }
@@ -227,7 +236,7 @@
       <textarea name="text" required placeholder="Your post..." rows="3"></textarea>
       <button type="submit">Submit Post</button>
     </form>
-    <div id="submitMsg" style="text-align:center; margin-bottom:8px; font-size:1em; color:var(--info);"></div>
+    <div id="submitMsg" style="text-align:left; margin-bottom:8px; font-size:1em; color:var(--subtext);"></div>
     <div id="posts"></div>
   </div>
 <script>
@@ -327,8 +336,8 @@
       .orderBy('timestamp', 'desc').get();
     const posts = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     document.getElementById('adminPanel').innerHTML = `
-      <div style="font-weight:600; color:var(--info); margin-bottom:8px;">Pending Posts</div>
-      ${posts.length === 0 ? "<div style='color:var(--info);'>No pending posts.</div>" : ""}
+      <div style="font-weight:600; color:var(--subtext); margin-bottom:8px;">Pending Posts</div>
+      ${posts.length === 0 ? "<div style='color:var(--subtext);'>No pending posts.</div>" : ""}
       ${posts.map((post, i) => {
         const dt = post.timestamp && post.timestamp.toDate
           ? post.timestamp.toDate()
@@ -345,7 +354,7 @@
             <b>&gt;${post.userId}</b> &nbsp; ${dateStr}
           </div>
           <div>${post.text}</div>
-          <div style="font-size:0.88em; color:#7892629c; margin-top:3px;">
+          <div style="font-size:0.88em; color:var(--subtext); margin-top:3px;">
             UA: ${post.ua}<br>IP: ${post.ip}
           </div>
           <div class="moderate-btns">
