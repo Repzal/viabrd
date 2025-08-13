@@ -1,121 +1,157 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Modern Text Board</title>
+  <title>viabrd - Hacker Text Board</title>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/10.2.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.2.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.2.0/firebase-firestore-compat.js"></script>
-  <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css?family=Montserrat:400,600&display=swap" rel="stylesheet">
+  <!-- Google Fonts for Hacker Style -->
+  <link href="https://fonts.googleapis.com/css?family=Share+Tech+Mono|Montserrat:400,600&display=swap" rel="stylesheet">
   <style>
+    :root {
+      --bg: #181c20;
+      --card: #23272b;
+      --accent: #36ff7a;
+      --accent-fade: #2ed469;
+      --glass: rgba(40,45,50,0.85);
+      --border: #1a242a;
+      --text-main: #e4f7db;
+      --text-sub: #7fffd4;
+      --text-fade: #36ff7a99;
+    }
     body {
-      font-family: 'Montserrat', Arial, sans-serif;
-      background: #eef6e6;
-      color: #333;
+      font-family: 'Share Tech Mono', 'Montserrat', monospace, sans-serif;
+      background: var(--bg);
+      color: var(--text-main);
       margin: 0;
       padding: 0;
       min-height: 100vh;
       box-sizing: border-box;
+      letter-spacing: 0.03em;
     }
     h1, h2 {
       text-align: center;
       margin-top: 30px;
       font-weight: 600;
       letter-spacing: 2px;
+      color: var(--accent);
+      text-shadow: 0 0 6px var(--accent-fade);
+    }
+    .board-title {
+      font-size: 2.2em;
+      margin-top: 38px;
+      font-family: 'Share Tech Mono', monospace;
+      text-shadow: 0 0 18px var(--accent-fade);
     }
     form {
-      background: #f8f1e0;
-      border-radius: 18px;
-      max-width: 500px;
-      margin: 24px auto;
-      padding: 24px;
-      box-shadow: 0 2px 16px rgba(60,100,60,0.08);
+      background: var(--glass);
+      border-radius: 22px;
+      max-width: 520px;
+      margin: 22px auto 0 auto;
+      padding: 26px 30px;
+      box-shadow: 0 4px 24px #000a;
       display: flex;
       flex-direction: column;
-      gap: 12px;
-      border: 1px solid #d0c7a6;
+      gap: 14px;
+      border: 2px solid var(--border);
+      backdrop-filter: blur(4px);
     }
     textarea, input[type="email"], input[type="password"] {
-      border-radius: 12px;
-      border: 1px solid #d0c7a6;
-      padding: 12px;
+      border-radius: 14px;
+      border: 1px solid var(--accent-fade);
+      padding: 13px;
       font-size: 1em;
-      background: #f8f5e4;
+      background: #181c20de;
+      color: var(--text-main);
       resize: vertical;
       outline: none;
       transition: border-color 0.18s;
+      font-family: 'Share Tech Mono', monospace;
+      box-shadow: 0 1px 8px #36ff7a10;
     }
     textarea:focus, input:focus {
-      border-color: #a3c78a;
+      border-color: var(--accent);
+      background: #232a2fde;
     }
     button {
-      background: linear-gradient(90deg,#a3c78a 0%,#b2d6b1 100%);
-      color: #fff;
+      background: linear-gradient(90deg,var(--accent) 0%,var(--accent-fade) 100%);
+      color: #111;
       border:none;
-      border-radius: 12px;
-      padding: 10px 0;
-      font-weight: 600;
-      font-size: 1.1em;
+      border-radius: 14px;
+      padding: 11px 0;
+      font-weight: 700;
+      font-size: 1.08em;
       cursor: pointer;
-      transition: background 0.18s;
-      box-shadow: 0 1px 8px rgba(163,199,138,0.08);
+      transition: background 0.18s, color 0.18s;
+      box-shadow: 0 2px 12px var(--accent-fade);
+      font-family: 'Montserrat', 'Share Tech Mono', monospace;
+      letter-spacing: 0.08em;
     }
     button:hover {
-      background: linear-gradient(90deg,#8cbf6a 0%,#a3c78a 100%);
+      background: linear-gradient(90deg,#2ed469 0%,#36ff7a 100%);
+      color: var(--bg);
     }
     .post {
-      background: #f8f1e0;
-      border-radius: 18px;
-      box-shadow: 0 2px 10px rgba(60,100,60,0.06);
-      margin: 16px auto;
-      max-width: 480px;
-      padding: 18px 22px;
-      border: 1px solid #d0c7a6;
+      background: var(--card);
+      border-radius: 22px;
+      box-shadow: 0 2px 18px #36ff7a18;
+      margin: 18px auto;
+      max-width: 500px;
+      padding: 21px 24px;
+      border: 1px solid var(--accent-fade);
       word-break: break-word;
       transition: box-shadow 0.18s;
+      position: relative;
     }
     .post:hover {
-      box-shadow: 0 4px 18px rgba(60,100,60,0.12);
+      box-shadow: 0 4px 24px #36ff7a38;
+      border-color: var(--accent);
     }
     .admin {
-      background: #e5f1dc;
-      border-radius: 18px;
-      max-width: 500px;
-      margin: 24px auto;
-      padding: 24px;
-      box-shadow: 0 2px 16px rgba(60,100,60,0.10);
-      border: 1px solid #b0d6a6;
+      background: var(--glass);
+      border-radius: 22px;
+      max-width: 520px;
+      margin: 26px auto;
+      padding: 26px 32px;
+      box-shadow: 0 4px 18px #36ff7a18;
+      border: 2px solid var(--border);
+      backdrop-filter: blur(4px);
     }
     .pending-list .post {
       cursor: pointer;
-      border: 2px solid #b0d6a6;
-      background: #f7fbe8;
+      border: 2px solid var(--accent-fade);
+      background: #252b29;
       transition: background 0.18s, border 0.18s;
     }
     .pending-list .post:hover {
-      background: #e5f1dc;
-      border: 2px solid #93c97a;
+      background: #1e2622;
+      border: 2px solid var(--accent);
+      box-shadow: 0 0 32px var(--accent-fade);
     }
     .popup-bg {
       position: fixed;
       top:0; left:0; width:100vw; height:100vh;
-      background: rgba(60,100,60,0.20);
+      background: rgba(24,28,32,0.86);
       display: flex;
       align-items: center;
       justify-content: center;
       z-index: 999;
+      backdrop-filter: blur(4px);
     }
     .popup {
-      background: #f8f1e0;
+      background: #23272bfb;
       border-radius: 20px;
-      box-shadow: 0 4px 32px rgba(60,100,60,0.20);
-      padding: 38px 32px 26px 32px;
-      max-width: 350px;
+      box-shadow: 0 4px 32px #36ff7a28;
+      padding: 40px 30px 28px 30px;
+      max-width: 370px;
       width: 97vw;
       position: relative;
+      border: 2px solid var(--accent-fade);
+      color: var(--text-main);
+      font-family: 'Share Tech Mono', monospace;
     }
     .popup h3 {
       margin-top: 0;
@@ -123,6 +159,8 @@
       font-weight: 600;
       font-size: 1.15em;
       text-align: center;
+      color: var(--accent);
+      text-shadow: 0 0 8px var(--accent-fade);
     }
     .popup .buttons {
       display: flex;
@@ -132,32 +170,60 @@
     }
     .popup .close {
       position: absolute;
-      top: 12px;
-      right: 18px;
+      top: 10px;
+      right: 14px;
       background: none;
       border: none;
-      font-size: 1.3em;
-      color: #a3c78a;
+      font-size: 1.7em;
+      color: var(--accent-fade);
       cursor: pointer;
+      text-shadow: 0 0 8px var(--accent);
     }
-    @media (max-width:600px) {
-      .post, .admin, form { max-width: 96vw; padding: 14px; }
-      .popup { padding: 20px; }
+    .popup-content-inner {
+      background: #181c20e3;
+      border-radius: 12px;
+      padding: 10px 16px;
+      margin: 7px 0;
+      font-size: 1.07em;
+      color: var(--text-main);
+      box-shadow: 0 1px 8px #36ff7a18;
+    }
+    .ua-ip {
+      font-size: 0.92em;
+      color: var(--text-fade);
+      margin-top: 6px;
+    }
+    .pending-indicator {
+      position: absolute;
+      top: 10px; right: 18px;
+      font-size: 0.95em;
+      color: var(--accent);
+      opacity: 0.5;
+      background: #181c20de;
+      border-radius: 6px;
+      padding: 2px 8px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+    }
+    @media (max-width:640px) {
+      .post, .admin, form { max-width: 98vw; padding: 14px; }
+      .popup { padding: 18px; }
+      .board-title { font-size: 1.3em; }
     }
   </style>
 </head>
 <body>
-  <h1>&#x1f320; Futuristic Text Board</h1>
+  <h1 class="board-title">viabrd</h1>
   <form id="postForm">
-    <textarea name="text" required placeholder="Your post..." rows="3"></textarea>
-    <button type="submit">Submit Post</button>
+    <textarea name="text" required placeholder="Type your hacky message..." rows="3"></textarea>
+    <button type="submit">Submit</button>
   </form>
   <div id="submitMsg" style="text-align:center; margin-bottom:16px;"></div>
 
   <h2>Posts</h2>
   <div id="posts"></div>
 
-  <hr>
+  <hr style="margin:40px 0 0 0; border-color:#2ed469; opacity:.18;">
   <h2>Admin Login</h2>
   <form id="adminLogin">
     <input name="email" type="email" required placeholder="Admin Email">
@@ -173,8 +239,8 @@
       <h3>Moderate Post</h3>
       <div id="popupContent"></div>
       <div class="buttons">
-        <button id="approveBtn" style="background:#a3c78a;">Approve</button>
-        <button id="rejectBtn" style="background:#d67171;">Reject</button>
+        <button id="approveBtn" style="background:var(--accent);color:#111;">Approve</button>
+        <button id="rejectBtn" style="background:#d67171;color:#fff;">Reject</button>
       </div>
     </div>
   </div>
@@ -219,7 +285,7 @@
     const posts = snap.docs.map(doc => doc.data());
     document.getElementById('posts').innerHTML = posts.map(post => `
       <div class="post">
-        <div>${post.text}</div>
+        <div class="popup-content-inner">${post.text}</div>
       </div>
     `).join('');
   }
@@ -250,14 +316,15 @@
     pendingPosts = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     document.getElementById('adminPanel').innerHTML = `
       <div class="admin">
-        <h3>Pending Posts</h3>
+        <h3 style="color:var(--accent);text-shadow:0 0 8px var(--accent-fade);">Pending Posts</h3>
         <div class="pending-list">
-        ${pendingPosts.length === 0 ? "No pending posts." : ""}
+        ${pendingPosts.length === 0 ? "<div style='color:#7fffd4;'>No pending posts.</div>" : ""}
         ${pendingPosts.map((post, i) => `
           <div class="post" onclick="showPopup(${i})" title="Click to moderate">
-            <div>${post.text}</div>
-            <div style="font-size:0.9em;opacity:.8"><b>UA:</b> ${post.ua}</div>
-            <div style="font-size:0.9em;opacity:.8"><b>IP:</b> ${post.ip}</div>
+            <div class="popup-content-inner">${post.text}</div>
+            <div class="ua-ip"><b>UA:</b> ${post.ua}</div>
+            <div class="ua-ip"><b>IP:</b> ${post.ip}</div>
+            <span class="pending-indicator">Pending</span>
           </div>
         `).join('')}
         </div>
@@ -271,11 +338,11 @@
     document.getElementById('popupContent').innerHTML = `
       <div style="margin-bottom:14px;">
         <div><b>Text:</b></div>
-        <div style="background:#fffde8;border-radius:10px;padding:8px 12px; margin:8px 0;">
+        <div class="popup-content-inner" style="margin-bottom:8px;">
           ${post.text}
         </div>
-        <div style="font-size:0.97em;opacity:.8"><b>UA:</b> ${post.ua}</div>
-        <div style="font-size:0.97em;opacity:.8"><b>IP:</b> ${post.ip}</div>
+        <div class="ua-ip"><b>UA:</b> ${post.ua}</div>
+        <div class="ua-ip"><b>IP:</b> ${post.ip}</div>
       </div>
     `;
     document.getElementById('approveBtn').onclick = async () => {
