@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>viabrd - 4chan Style Dark Text Board</title>
+  <title>viabrd - Neon Purple 4chan Style Dark Text Board</title>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <!-- Firebase SDKs -->
@@ -12,18 +12,21 @@
   <link href="https://fonts.googleapis.com/css?family=Roboto+Mono:400,700|Noto+Sans:400,600&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bkg: #212a21;
-      --post: #2e372e;
-      --border: #5a7d5a;
-      --info: #b7e0b7;
-      --admin: #2e372e;
-      --admin-border: #5a7d5a;
-      --button: #76a876;
-      --button-hover: #456c45;
+      --bkg: #000;
+      --post: #171117;
+      --border: #9b38f3;
+      --info: #e09bff;
+      --admin: #171117;
+      --admin-border: #9b38f3;
+      --button: #ae36f5;
+      --button-hover: #7d28b3;
       --error: #c77;
-      --shadow: 0 2px 8px #5a7d5a60;
-      --text: #e4f7db;
-      --subtext: #a7d8a7;
+      --shadow: 0 2px 8px #9b38f360;
+      --text: #fff;
+      --subtext: #e09bff;
+      --user-neon: #ae36f5;
+      --trusted: #36f5ae;
+      --trusted-bg: #111c18;
     }
     html, body {
       background: var(--bkg);
@@ -41,7 +44,7 @@
       color: var(--info);
       letter-spacing: 1px;
       font-family: 'Roboto Mono', monospace;
-      text-shadow: 0 1px 0 #222, 0 2px 0 #5a7d5a;
+      text-shadow: 0 0 10px var(--border), 0 1px 0 #222;
       text-align: left;
       margin-left: 22px;
     }
@@ -68,7 +71,7 @@
       border-radius: 4px;
       resize: vertical;
       padding: 8px;
-      background: #212a21;
+      background: #0e0d0e;
       color: var(--text);
     }
     .post-form button {
@@ -80,8 +83,9 @@
       font-weight: 600;
       font-size: 1em;
       cursor: pointer;
-      box-shadow: 0 1px 4px #5a7d5a88;
+      box-shadow: 0 1px 8px var(--border);
       transition: background 0.18s;
+      text-shadow: 0 0 6px var(--border);
     }
     .post-form button:hover {
       background: var(--button-hover);
@@ -92,6 +96,7 @@
       margin-bottom: 2px;
       font-family: 'Roboto Mono', monospace;
       letter-spacing: 0.5px;
+      text-shadow: 0 0 8px var(--border);
     }
     .post {
       background: var(--post);
@@ -109,6 +114,11 @@
       margin-bottom: 7px;
       font-size: 0.97em;
       color: var(--subtext);
+      text-shadow: 0 0 8px var(--border);
+    }
+    .post .user-id {
+      color: var(--user-neon);
+      text-shadow: 0 0 8px var(--border), 0 1px 0 #222;
     }
     .admin-login {
       position: fixed;
@@ -118,7 +128,7 @@
       color: var(--text);
       border: 1.5px solid var(--admin-border);
       border-radius: 8px;
-      box-shadow: 0 1px 8px #5a7d5a44;
+      box-shadow: 0 1px 8px var(--border);
       padding: 12px 14px 8px 14px;
       z-index: 100;
       min-width: 170px;
@@ -132,7 +142,7 @@
       border: 1px solid var(--border);
       border-radius: 4px;
       padding: 5px;
-      background: #212a21;
+      background: #0e0d0e;
       color: var(--text);
       font-family: inherit;
       font-size: 0.94em;
@@ -147,9 +157,10 @@
       font-weight: 600;
       font-size: 0.97em;
       cursor: pointer;
-      box-shadow: 0 1px 4px #5a7d5a88;
+      box-shadow: 0 1px 4px var(--border);
       margin-top: 3px;
       transition: background 0.18s;
+      text-shadow: 0 0 6px var(--border);
     }
     .admin-login button:hover {
       background: var(--button-hover);
@@ -163,17 +174,19 @@
       color: var(--text);
       border: 1.5px solid var(--admin-border);
       border-radius: 8px;
-      box-shadow: 0 1px 8px #5a7d5a44;
+      box-shadow: 0 1px 8px var(--border);
       padding: 12px 12px 8px 12px;
       font-size: 0.99em;
       font-family: 'Roboto Mono', monospace;
       z-index: 101;
+      overflow-y: auto;
+      max-height: 70vh;
     }
     .pending-post {
-      background: #253226;
+      background: #231d23;
       border: 1.5px solid var(--border);
       border-radius: 4px;
-      box-shadow: 0 1px 6px #5a7d5a88;
+      box-shadow: 0 1px 6px var(--border);
       margin: 10px 0;
       padding: 10px 12px 7px 12px;
       word-break: break-word;
@@ -185,6 +198,23 @@
       margin-bottom: 7px;
       font-size: 0.96em;
       color: var(--subtext);
+      text-shadow: 0 0 8px var(--border);
+    }
+    .pending-post .user-id {
+      color: var(--user-neon);
+      text-shadow: 0 0 8px var(--border), 0 1px 0 #222;
+    }
+    .trusted-user {
+      color: var(--trusted);
+      background: var(--trusted-bg);
+      border-radius: 3px;
+      padding: 2px 6px;
+      font-weight: 700;
+      font-size: 0.95em;
+      margin-left: 8px;
+      text-shadow: 0 0 8px var(--trusted);
+      border: 1px solid var(--trusted);
+      display: inline-block;
     }
     .pending-post .moderate-btns {
       display: flex;
@@ -200,17 +230,27 @@
       font-weight: 600;
       font-size: 0.97em;
       cursor: pointer;
-      box-shadow: 0 1px 4px #5a7d5a88;
+      box-shadow: 0 1px 4px var(--border);
       transition: background 0.18s;
+      text-shadow: 0 0 6px var(--border);
     }
     .moderate-btns button:hover {
       background: var(--button-hover);
     }
     .moderate-btns .reject {
       background: var(--error);
+      text-shadow: none;
     }
     .moderate-btns .reject:hover {
       background: #a33;
+    }
+    .moderate-btns .trust {
+      background: var(--trusted);
+      color: #111;
+      text-shadow: 0 0 8px var(--trusted);
+    }
+    .moderate-btns .trust:hover {
+      background: #2de0a7;
     }
     @media (max-width:750px) {
       .container { max-width: 99vw; margin-left: 2vw; }
@@ -260,6 +300,15 @@
     localStorage.setItem("viabrd_userId", userId);
   }
 
+  // Cache of trusted users (for this session)
+  let trustedUserIds = [];
+  // Fetch trusted users from Firestore
+  async function loadTrustedUsers() {
+    const snap = await db.collection("trustedUsers").get();
+    trustedUserIds = snap.docs.map(doc => doc.id);
+  }
+  loadTrustedUsers();
+
   // --- Submit Post ---
   document.getElementById('postForm').onsubmit = async (e) => {
     e.preventDefault();
@@ -270,16 +319,22 @@
       const res = await fetch('https://api.ipify.org?format=json');
       ip = (await res.json()).ip;
     } catch {}
+    // Check if user is trusted: auto-approve
+    await loadTrustedUsers();
+    const isTrusted = trustedUserIds.includes(userId);
     await db.collection('posts').add({
       text,
       ua,
       ip,
       userId,
-      approved: false,
+      approved: isTrusted,
       timestamp: firebase.firestore.FieldValue.serverTimestamp()
     });
-    document.getElementById('submitMsg').innerText = "Submitted for approval!";
+    document.getElementById('submitMsg').innerText = isTrusted
+      ? "Auto-approved! Your post is live."
+      : "Submitted for approval!";
     e.target.reset();
+    loadPosts();
   };
 
   // --- Load Approved Posts ---
@@ -298,10 +353,13 @@
         String(dt.getHours()).padStart(2,"0") + ":" +
         String(dt.getMinutes()).padStart(2,"0") + ":" +
         String(dt.getSeconds()).padStart(2,"0");
+      const trustedBadge = trustedUserIds.includes(post.userId)
+        ? `<span class="trusted-user">TRUSTED</span>`
+        : "";
       return `
       <div class="post">
         <div class="info">
-          <b>&gt;${post.userId}</b> &nbsp; ${dateStr}
+          <span class="user-id">&gt;${post.userId}</span> ${trustedBadge} &nbsp; ${dateStr}
         </div>
         <div>${post.text}</div>
       </div>
@@ -312,6 +370,7 @@
 
   // --- Admin Login ---
   let adminUser = null;
+  let adminPanelInterval = null;
   document.getElementById('adminLogin').onsubmit = async (e) => {
     e.preventDefault();
     const email = e.target.email.value;
@@ -322,14 +381,18 @@
       adminUser = userCred.user;
       document.getElementById('adminLoginBox').style.display = "none";
       document.getElementById('adminPanel').style.display = "block";
-      loadAdminPanel();
+      loadTrustedUsers().then(loadAdminPanel);
+      // Auto-refresh every 5 seconds
+      if (adminPanelInterval) clearInterval(adminPanelInterval);
+      adminPanelInterval = setInterval(loadAdminPanel, 5000);
     } catch (err) {
       document.getElementById('adminLoginMsg').innerText = "Login failed";
     }
   };
 
-  // --- Admin Panel: Approve/Reject Posts ---
+  // --- Admin Panel: Approve/Reject/Trust Posts ---
   async function loadAdminPanel() {
+    await loadTrustedUsers();
     if (!adminUser) return;
     const snap = await db.collection('posts')
       .where('approved', '==', false)
@@ -348,10 +411,13 @@
           String(dt.getHours()).padStart(2,"0") + ":" +
           String(dt.getMinutes()).padStart(2,"0") + ":" +
           String(dt.getSeconds()).padStart(2,"0");
+        const trustedBadge = trustedUserIds.includes(post.userId)
+          ? `<span class="trusted-user">TRUSTED</span>`
+          : "";
         return `
         <div class="pending-post">
           <div class="info">
-            <b>&gt;${post.userId}</b> &nbsp; ${dateStr}
+            <span class="user-id">&gt;${post.userId}</span> ${trustedBadge} &nbsp; ${dateStr}
           </div>
           <div>${post.text}</div>
           <div style="font-size:0.88em; color:var(--subtext); margin-top:3px;">
@@ -360,6 +426,7 @@
           <div class="moderate-btns">
             <button onclick="approvePost('${post.id}')">Approve</button>
             <button class="reject" onclick="rejectPost('${post.id}')">Reject</button>
+            ${trustedUserIds.includes(post.userId) ? "" : `<button class="trust" onclick="trustUser('${post.userId}')">Trust User</button>`}
           </div>
         </div>
         `;
@@ -378,12 +445,22 @@
     loadAdminPanel();
   };
 
+  window.trustUser = async (userId) => {
+    await db.collection('trustedUsers').doc(userId).set({ trusted: true });
+    await loadTrustedUsers();
+    loadAdminPanel();
+    loadPosts();
+  };
+
   firebase.auth().onAuthStateChanged(user => {
     if (user) {
       adminUser = user;
       document.getElementById('adminLoginBox').style.display = "none";
       document.getElementById('adminPanel').style.display = "block";
-      loadAdminPanel();
+      loadTrustedUsers().then(loadAdminPanel);
+      // Auto-refresh every 5 seconds
+      if (adminPanelInterval) clearInterval(adminPanelInterval);
+      adminPanelInterval = setInterval(loadAdminPanel, 5000);
     }
   });
 </script>
