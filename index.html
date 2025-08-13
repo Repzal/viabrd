@@ -1,24 +1,158 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Text Board (Firebase)</title>
+  <title>Modern Text Board</title>
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/10.2.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.2.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.2.0/firebase-firestore-compat.js"></script>
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css?family=Montserrat:400,600&display=swap" rel="stylesheet">
   <style>
-    body { font-family: Arial; max-width: 600px; margin: 30px auto; }
-    .post { border: 1px solid #ccc; margin: 10px 0; padding: 10px; }
-    .admin { background: #f9f9f9; border: 1px solid #bbb; padding: 10px; }
+    body {
+      font-family: 'Montserrat', Arial, sans-serif;
+      background: #eef6e6;
+      color: #333;
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      box-sizing: border-box;
+    }
+    h1, h2 {
+      text-align: center;
+      margin-top: 30px;
+      font-weight: 600;
+      letter-spacing: 2px;
+    }
+    form {
+      background: #f8f1e0;
+      border-radius: 18px;
+      max-width: 500px;
+      margin: 24px auto;
+      padding: 24px;
+      box-shadow: 0 2px 16px rgba(60,100,60,0.08);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      border: 1px solid #d0c7a6;
+    }
+    textarea, input[type="email"], input[type="password"] {
+      border-radius: 12px;
+      border: 1px solid #d0c7a6;
+      padding: 12px;
+      font-size: 1em;
+      background: #f8f5e4;
+      resize: vertical;
+      outline: none;
+      transition: border-color 0.18s;
+    }
+    textarea:focus, input:focus {
+      border-color: #a3c78a;
+    }
+    button {
+      background: linear-gradient(90deg,#a3c78a 0%,#b2d6b1 100%);
+      color: #fff;
+      border:none;
+      border-radius: 12px;
+      padding: 10px 0;
+      font-weight: 600;
+      font-size: 1.1em;
+      cursor: pointer;
+      transition: background 0.18s;
+      box-shadow: 0 1px 8px rgba(163,199,138,0.08);
+    }
+    button:hover {
+      background: linear-gradient(90deg,#8cbf6a 0%,#a3c78a 100%);
+    }
+    .post {
+      background: #f8f1e0;
+      border-radius: 18px;
+      box-shadow: 0 2px 10px rgba(60,100,60,0.06);
+      margin: 16px auto;
+      max-width: 480px;
+      padding: 18px 22px;
+      border: 1px solid #d0c7a6;
+      word-break: break-word;
+      transition: box-shadow 0.18s;
+    }
+    .post:hover {
+      box-shadow: 0 4px 18px rgba(60,100,60,0.12);
+    }
+    .admin {
+      background: #e5f1dc;
+      border-radius: 18px;
+      max-width: 500px;
+      margin: 24px auto;
+      padding: 24px;
+      box-shadow: 0 2px 16px rgba(60,100,60,0.10);
+      border: 1px solid #b0d6a6;
+    }
+    .pending-list .post {
+      cursor: pointer;
+      border: 2px solid #b0d6a6;
+      background: #f7fbe8;
+      transition: background 0.18s, border 0.18s;
+    }
+    .pending-list .post:hover {
+      background: #e5f1dc;
+      border: 2px solid #93c97a;
+    }
+    .popup-bg {
+      position: fixed;
+      top:0; left:0; width:100vw; height:100vh;
+      background: rgba(60,100,60,0.20);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 999;
+    }
+    .popup {
+      background: #f8f1e0;
+      border-radius: 20px;
+      box-shadow: 0 4px 32px rgba(60,100,60,0.20);
+      padding: 38px 32px 26px 32px;
+      max-width: 350px;
+      width: 97vw;
+      position: relative;
+    }
+    .popup h3 {
+      margin-top: 0;
+      margin-bottom: 18px;
+      font-weight: 600;
+      font-size: 1.15em;
+      text-align: center;
+    }
+    .popup .buttons {
+      display: flex;
+      gap: 16px;
+      margin-top: 18px;
+      justify-content: center;
+    }
+    .popup .close {
+      position: absolute;
+      top: 12px;
+      right: 18px;
+      background: none;
+      border: none;
+      font-size: 1.3em;
+      color: #a3c78a;
+      cursor: pointer;
+    }
+    @media (max-width:600px) {
+      .post, .admin, form { max-width: 96vw; padding: 14px; }
+      .popup { padding: 20px; }
+    }
   </style>
 </head>
 <body>
-  <h1>Text Board</h1>
+  <h1>&#x1f320; Futuristic Text Board</h1>
   <form id="postForm">
-    <textarea name="text" required placeholder="Your post..." rows="3"></textarea><br>
+    <textarea name="text" required placeholder="Your post..." rows="3"></textarea>
     <button type="submit">Submit Post</button>
   </form>
-  <div id="submitMsg"></div>
+  <div id="submitMsg" style="text-align:center; margin-bottom:16px;"></div>
 
   <h2>Posts</h2>
   <div id="posts"></div>
@@ -32,8 +166,20 @@
   </form>
   <div id="adminPanel"></div>
 
+  <!-- Approve Popup -->
+  <div id="popupBg" class="popup-bg" style="display:none;">
+    <div class="popup" id="popup">
+      <button class="close" onclick="closePopup()">&times;</button>
+      <h3>Moderate Post</h3>
+      <div id="popupContent"></div>
+      <div class="buttons">
+        <button id="approveBtn" style="background:#a3c78a;">Approve</button>
+        <button id="rejectBtn" style="background:#d67171;">Reject</button>
+      </div>
+    </div>
+  </div>
 <script>
-  // Your provided Firebase config:
+  // Your Firebase config:
   const firebaseConfig = {
     apiKey: "AIzaSyCaXgwoEVffniskfv-wUoZ3dHjVMomu3AM",
     authDomain: "imageb-8e4d6.firebaseapp.com",
@@ -61,7 +207,7 @@
       approved: false,
       timestamp: firebase.firestore.FieldValue.serverTimestamp()
     });
-    document.getElementById('submitMsg').innerText = "Submitted for approval!";
+    document.getElementById('submitMsg').innerText = "✅ Submitted for approval!";
     e.target.reset();
   };
 
@@ -95,37 +241,57 @@
   };
 
   // --- Admin Panel: Approve/Reject Posts ---
+  let pendingPosts = [];
   async function loadAdminPanel() {
     if (!adminUser) return;
     const snap = await db.collection('posts')
       .where('approved', '==', false)
       .orderBy('timestamp', 'desc').get();
-    const posts = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    pendingPosts = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     document.getElementById('adminPanel').innerHTML = `
       <div class="admin">
         <h3>Pending Posts</h3>
-        ${posts.length === 0 ? "No pending posts." : ""}
-        ${posts.map(post => `
-          <div class="post">
+        <div class="pending-list">
+        ${pendingPosts.length === 0 ? "No pending posts." : ""}
+        ${pendingPosts.map((post, i) => `
+          <div class="post" onclick="showPopup(${i})" title="Click to moderate">
             <div>${post.text}</div>
-            <div><b>UA:</b> ${post.ua}</div>
-            <div><b>IP:</b> ${post.ip}</div>
-            <button onclick="approvePost('${post.id}')">Approve</button>
-            <button onclick="rejectPost('${post.id}')">Reject</button>
+            <div style="font-size:0.9em;opacity:.8"><b>UA:</b> ${post.ua}</div>
+            <div style="font-size:0.9em;opacity:.8"><b>IP:</b> ${post.ip}</div>
           </div>
         `).join('')}
+        </div>
       </div>
     `;
   }
 
-  window.approvePost = async (id) => {
-    await db.collection('posts').doc(id).update({ approved: true });
-    loadAdminPanel();
-    loadPosts();
-  };
-  window.rejectPost = async (id) => {
-    await db.collection('posts').doc(id).delete();
-    loadAdminPanel();
+  window.showPopup = function(idx) {
+    const post = pendingPosts[idx];
+    document.getElementById('popupBg').style.display = 'flex';
+    document.getElementById('popupContent').innerHTML = `
+      <div style="margin-bottom:14px;">
+        <div><b>Text:</b></div>
+        <div style="background:#fffde8;border-radius:10px;padding:8px 12px; margin:8px 0;">
+          ${post.text}
+        </div>
+        <div style="font-size:0.97em;opacity:.8"><b>UA:</b> ${post.ua}</div>
+        <div style="font-size:0.97em;opacity:.8"><b>IP:</b> ${post.ip}</div>
+      </div>
+    `;
+    document.getElementById('approveBtn').onclick = async () => {
+      await db.collection('posts').doc(post.id).update({ approved: true });
+      closePopup();
+      loadAdminPanel();
+      loadPosts();
+    };
+    document.getElementById('rejectBtn').onclick = async () => {
+      await db.collection('posts').doc(post.id).delete();
+      closePopup();
+      loadAdminPanel();
+    };
+  }
+  window.closePopup = function() {
+    document.getElementById('popupBg').style.display = 'none';
   };
 
   firebase.auth().onAuthStateChanged(user => {
