@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>viabrd - Neon Purple 4chan Style Board (Threads, Rate Limit, Captcha, Ban, Sticky, Theme)</title>
+  <title>viabrd - Neon Purple 4chan Style Board (Threads, Rate Limit, Ban, Sticky, Theme)</title>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <!-- Firebase SDKs -->
@@ -514,9 +514,15 @@
     });
   }
 
-  // --- Captcha ---
+  // --- Captcha Once Per Day ---
   let captchaAnswer = null;
+  let captchaTodayKey = `viabrd_captcha_${new Date().getFullYear()}_${new Date().getMonth()}_${new Date().getDate()}`;
+  let captchaSolvedToday = localStorage.getItem(captchaTodayKey) === "1";
   function setupCaptcha() {
+    if(isAdmin || captchaSolvedToday) {
+      document.getElementById("captchaBox").innerHTML = "";
+      return;
+    }
     const a = Math.floor(Math.random()*10)+2, b = Math.floor(Math.random()*10)+2;
     captchaAnswer = a + b;
     document.getElementById("captchaBox").innerHTML =
@@ -568,12 +574,16 @@
       setupCaptcha();
       return;
     }
-    if (!isAdmin) {
+    if (!isAdmin && !captchaSolvedToday) {
       let captchaUser = (document.getElementById("captchaInput")?.value||"").replace(/\s+/g,"");
       if (Number(captchaUser) !== captchaAnswer) {
         document.getElementById('submitMsg').innerText = "Captcha incorrect!";
         setupCaptcha();
         return;
+      } else {
+        captchaSolvedToday = true;
+        localStorage.setItem(captchaTodayKey, "1");
+        setupCaptcha();
       }
     }
     await loadTrustedUsers();
@@ -592,7 +602,6 @@
     document.getElementById('submitMsg').innerText = (isAdmin || isTrusted)
       ? "Auto-approved! Your post is live."
       : "Submitted for approval!";
-    setupCaptcha();
     replyTo = null;
     e.target.reset();
     loadPosts();
