@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>viabrd</title>
+  <title>viabrd - Neon Purple 4chan Style Board (Threads, Rate Limit, Captcha, Ban, Sticky, Theme)</title>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <!-- Firebase SDKs -->
@@ -9,7 +9,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.2.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.2.0/firebase-firestore-compat.js"></script>
   <link href="https://fonts.googleapis.com/css?family=Roboto+Mono:400,700|Noto+Sans:400,600&display=swap" rel="stylesheet">
-  <style>
+  <style id="theme-style">
     :root {
       --bkg: #000;
       --post: #171117;
@@ -32,6 +32,35 @@
       --code-border: #ae36f5;
       --code-color: #fff;
       --underline: #9b38f3;
+      --sticky-bg: #220032;
+      --sticky-border: #ffe27d;
+      --sticky-text: #ffe27d;
+    }
+    body.light-mode {
+      --bkg: #fafaff;
+      --post: #f3edfa;
+      --border: #9b38f3;
+      --info: #9b38f3;
+      --admin: #f3edfa;
+      --admin-border: #9b38f3;
+      --button: #ae36f5;
+      --button-hover: #7d28b3;
+      --error: #d99;
+      --shadow: 0 2px 8px #9b38f360;
+      --text: #111;
+      --subtext: #7711bb;
+      --user-neon: #ae36f5;
+      --trusted: #36f5ae;
+      --trusted-bg: #cdfbe4;
+      --admin-badge: #ff2fd2;
+      --admin-badge-bg: #f6d5fa;
+      --code-bg: #eaeaea;
+      --code-border: #ae36f5;
+      --code-color: #333;
+      --underline: #9b38f3;
+      --sticky-bg: #ffe27d;
+      --sticky-border: #ae36f5;
+      --sticky-text: #7d28b3;
     }
     html, body {
       background: var(--bkg);
@@ -72,6 +101,22 @@
       margin-left: 22px;
       padding: 0 10px;
     }
+    .theme-toggle {
+      position: fixed;
+      bottom: 24px;
+      left: 24px;
+      z-index: 999;
+      background: var(--post);
+      color: var(--info);
+      border: 2px solid var(--border);
+      font-family: 'Roboto Mono', monospace;
+      border-radius: 8px;
+      padding: 7px 15px;
+      cursor: pointer;
+      box-shadow: 0 1px 8px var(--border);
+      font-size: 1.1em;
+      transition: background 0.13s,color 0.13s;
+    }
     .post-form {
       background: var(--post);
       border: 1.5px solid var(--border);
@@ -93,6 +138,10 @@
       background: #0e0d0e;
       color: var(--text);
     }
+    body.light-mode .post-form textarea {
+      background: #f6eefd;
+      color: #222;
+    }
     .post-form button {
       background: var(--button);
       color: #fff;
@@ -108,6 +157,26 @@
     }
     .post-form button:hover {
       background: var(--button-hover);
+    }
+    .captcha-box {
+      margin-top: 7px;
+      font-family: 'Roboto Mono', monospace;
+      color: var(--subtext);
+      font-size: 1em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .captcha-box input {
+      padding: 2px 6px;
+      font-size: 0.96em;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+      background: #0e0d0e;
+      color: var(--text);
+    }
+    body.light-mode .captcha-box input {
+      background: #f6eefd; color: #222;
     }
     .info {
       color: var(--subtext);
@@ -128,6 +197,15 @@
       font-size: 1.06em;
       position: relative;
       font-family: 'Noto Sans', Arial, sans-serif;
+    }
+    .sticky {
+      background: var(--sticky-bg);
+      border: 2px solid var(--sticky-border);
+      color: var(--sticky-text);
+      box-shadow: 0 1px 12px var(--sticky-border);
+      font-weight: bold;
+      margin-bottom: 12px;
+      margin-top: 8px;
     }
     .post .info {
       margin-bottom: 7px;
@@ -166,6 +244,7 @@
       font-family: inherit;
       font-size: 0.94em;
     }
+    body.light-mode .admin-login input[type="email"],body.light-mode .admin-login input[type="password"]{background:#f6eefd;color:#222;}
     .admin-login button {
       background: var(--button);
       color: #fff;
@@ -185,7 +264,7 @@
       background: var(--button-hover);
     }
     .admin-panel {
-      max-width: 210px;
+      max-width: 260px;
       min-width: 160px;
       min-height: 120px;
       position: fixed;
@@ -281,6 +360,33 @@
     .moderate-btns .trust:hover {
       background: #2de0a7;
     }
+    .moderate-btns .sticky {
+      background: var(--sticky-border);
+      color: var(--sticky-text);
+      text-shadow: 0 0 8px var(--sticky-border);
+    }
+    .moderate-btns .sticky:hover {
+      background: var(--sticky-bg); color:var(--sticky-border);
+    }
+    .moderate-btns .unban {
+      background: var(--trusted);
+      color: #111;
+      text-shadow: 0 0 8px var(--trusted);
+    }
+    .moderate-btns .unban:hover {
+      background: #2de0a7;
+    }
+    .banned-badge {
+      color: #f36;
+      background: #222;
+      border-radius: 3px;
+      padding: 2px 6px;
+      font-weight: 700;
+      font-size: 0.95em;
+      margin-left: 8px;
+      border: 1px solid #f36;
+      display: inline-block;
+    }
     /* Markdown styles */
     .bold {
       font-weight: bold;
@@ -307,16 +413,33 @@
       cursor: pointer;
       user-select: text;
     }
+    .reply-link {
+      color: var(--button);
+      cursor: pointer;
+      text-decoration: underline;
+      margin-right: 10px;
+      font-size: 0.98em;
+    }
+    .reply-form {
+      background: var(--post);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      margin: 6px 0 12px 0;
+      padding: 7px 10px;
+      font-size: 0.98em;
+    }
     @media (max-width:750px) {
       .container { max-width: 99vw; margin-left: 2vw; }
       .board-title { font-size: 1.3em; margin-left: 2vw;}
       .post, .post-form { font-size: 1em; padding-left: 7px; padding-right: 7px; }
       .admin-login, .admin-panel { max-width: 98vw; width: 180px; padding-left: 6px; padding-right: 6px; }
+      .theme-toggle { left: 3vw; bottom: 12px;}
     }
   </style>
 </head>
 <body>
   <div class="board-title" id="boardTitle">viabrd</div>
+  <button class="theme-toggle" id="themeToggleBtn" onclick="toggleTheme()">🌙</button>
   <div class="admin-login" id="adminLoginBox">
     <form id="adminLogin" autocomplete="off">
       <input name="email" type="email" required placeholder="Admin Email">
@@ -329,13 +452,15 @@
   <div class="container">
     <form class="post-form" id="postForm">
       <textarea name="text" required placeholder="Your post..." rows="3"></textarea>
+      <div class="captcha-box" id="captchaBox"></div>
       <button type="submit">Submit Post</button>
     </form>
     <div id="submitMsg" style="text-align:left; margin-bottom:8px; font-size:1em; color:var(--subtext);"></div>
+    <div id="stickyPosts"></div>
     <div id="posts"></div>
   </div>
 <script>
-  // Your Firebase config:
+  // Firebase Config
   const firebaseConfig = {
     apiKey: "AIzaSyCaXgwoEVffniskfv-wUoZ3dHjVMomu3AM",
     authDomain: "imageb-8e4d6.firebaseapp.com",
@@ -351,31 +476,35 @@
   let isAdmin = false;
   let adminUser = null;
   let adminPanelInterval = null;
-  // Generate a "user" random number per session: UNIX timestamp of first post
+  let replyTo = null;
+  let lastPostTime = Number(localStorage.getItem("viabrd_lastPostTime")||"0");
+  let rateLimitSeconds = 30; // 1 post per 30 seconds
   let userId = localStorage.getItem("viabrd_userId");
   if (!userId) {
     userId = "" + Math.floor(Date.now() / 1000);
     localStorage.setItem("viabrd_userId", userId);
   }
-
-  // Cache of trusted users (for this session)
+  let bannedUserIds = [];
+  let bannedIPs = [];
   let trustedUserIds = [];
-  // Fetch trusted users from Firestore
-  async function loadTrustedUsers() {
-    const snap = await db.collection("trustedUsers").get();
-    trustedUserIds = snap.docs.map(doc => doc.id);
+
+  // --- Theme Toggle ---
+  function toggleTheme() {
+    document.body.classList.toggle('light-mode');
+    localStorage.setItem("viabrd_theme", document.body.classList.contains('light-mode') ? "light" : "dark");
+    document.getElementById('themeToggleBtn').innerText = document.body.classList.contains('light-mode') ? "🌞" : "🌙";
   }
-  loadTrustedUsers();
+  if(localStorage.getItem("viabrd_theme") === "light") {
+    document.body.classList.add('light-mode');
+    document.getElementById('themeToggleBtn').innerText = "🌞";
+  }
 
   // --- Markdown Parsing ---
   function parseMarkdown(text) {
-    // ^text^ to codeblock (copyable)
     text = text.replace(/\^([^]+?)\^/g, function(m, code){
-      return `<span class="codeblock" onclick="navigator.clipboard.writeText('${code.replace(/'/g,"\\'")}')">${escapeHTML(code)}</span>`;
+      return `<span class="codeblock" onclick="navigator.clipboard.writeText('${code.replace(/'/g, "\\'")}')">${escapeHTML(code)}</span>`;
     });
-    // *text* to bold
     text = text.replace(/\*([^*]+)\*/g, '<span class="bold">$1</span>');
-    // _text_ to underline
     text = text.replace(/_([^_]+)_/g, '<span class="underline">$1</span>');
     return text;
   }
@@ -383,6 +512,37 @@
     return s.replace(/[&<>"']/g, function(c) {
       return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
     });
+  }
+
+  // --- Captcha ---
+  let captchaAnswer = null;
+  function setupCaptcha() {
+    const a = Math.floor(Math.random()*10)+2, b = Math.floor(Math.random()*10)+2;
+    captchaAnswer = a + b;
+    document.getElementById("captchaBox").innerHTML =
+      `What is <b>${a} + ${b}</b>? <input type="text" id="captchaInput" required size="3" autocomplete="off">`;
+  }
+  setupCaptcha();
+
+  // --- Rate Limiting & Ban Check ---
+  async function isBanned(ip) {
+    await loadBanned();
+    return bannedUserIds.includes(userId) || bannedIPs.includes(ip);
+  }
+  async function loadBanned() {
+    const snap = await db.collection("bannedUsers").get();
+    bannedUserIds = snap.docs.filter(d=>d.data().type==="user").map(doc=>doc.id);
+    bannedIPs = snap.docs.filter(d=>d.data().type==="ip").map(doc=>doc.id);
+  }
+  async function loadTrustedUsers() {
+    const snap = await db.collection("trustedUsers").get();
+    trustedUserIds = snap.docs.map(doc => doc.id);
+  }
+
+  // --- Threading ---
+  function showReplyForm(parentId) {
+    replyTo = parentId;
+    document.getElementById('postForm').scrollIntoView({behavior:"smooth"});
   }
 
   // --- Submit Post ---
@@ -395,31 +555,72 @@
       const res = await fetch('https://api.ipify.org?format=json');
       ip = (await res.json()).ip;
     } catch {}
-    // Check if user is trusted: auto-approve
+
+    await loadBanned();
+    if (await isBanned(ip)) {
+      document.getElementById('submitMsg').innerText = "You are banned from posting.";
+      setupCaptcha();
+      return;
+    }
+    let now = Math.floor(Date.now()/1000);
+    if (!isAdmin && now - lastPostTime < rateLimitSeconds) {
+      document.getElementById('submitMsg').innerText = `Rate limited: Wait ${rateLimitSeconds-(now-lastPostTime)}s`;
+      setupCaptcha();
+      return;
+    }
+    if (!isAdmin) {
+      let captchaUser = (document.getElementById("captchaInput")?.value||"").replace(/\s+/g,"");
+      if (Number(captchaUser) !== captchaAnswer) {
+        document.getElementById('submitMsg').innerText = "Captcha incorrect!";
+        setupCaptcha();
+        return;
+      }
+    }
     await loadTrustedUsers();
     const isTrusted = trustedUserIds.includes(userId);
+    lastPostTime = now; localStorage.setItem("viabrd_lastPostTime", String(now));
     await db.collection('posts').add({
       text,
       ua,
       ip,
       userId: isAdmin ? "ADMIN" : userId,
       approved: isAdmin || isTrusted,
-      timestamp: firebase.firestore.FieldValue.serverTimestamp()
+      timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+      threadId: replyTo || null,
+      sticky: false
     });
     document.getElementById('submitMsg').innerText = (isAdmin || isTrusted)
       ? "Auto-approved! Your post is live."
       : "Submitted for approval!";
+    setupCaptcha();
+    replyTo = null;
     e.target.reset();
     loadPosts();
   };
 
-  // --- Load Approved Posts ---
+  // --- Load Posts & Threads ---
   async function loadPosts() {
-    const snap = await db.collection('posts')
+    await loadTrustedUsers();
+    await loadBanned();
+    // Sticky first
+    const stickySnap = await db.collection('posts')
       .where('approved', '==', true)
+      .where('sticky','==',true)
+      .orderBy('timestamp','desc').get();
+    const stickyPosts = stickySnap.docs.map(doc=>({...doc.data(), id:doc.id}));
+    // Main posts (no parent)
+    const mainSnap = await db.collection('posts')
+      .where('approved', '==', true)
+      .where('threadId','==',null)
       .orderBy('timestamp', 'desc').get();
-    const posts = snap.docs.map(doc => doc.data());
-    document.getElementById('posts').innerHTML = posts.map(post => {
+    const posts = mainSnap.docs.map(doc=>({...doc.data(), id:doc.id}));
+    // Replies
+    const repliesSnap = await db.collection('posts')
+      .where('approved','==',true)
+      .where('threadId','!=',null)
+      .orderBy('timestamp','asc').get();
+    const replies = repliesSnap.docs.map(doc=>({...doc.data(), id:doc.id}));
+    function renderPost(post,isSticky) {
       const dt = post.timestamp && post.timestamp.toDate
         ? post.timestamp.toDate()
         : new Date();
@@ -430,21 +631,36 @@
         String(dt.getMinutes()).padStart(2,"0") + ":" +
         String(dt.getSeconds()).padStart(2,"0");
       const trustedBadge = trustedUserIds.includes(post.userId)
-        ? `<span class="trusted-user">TRUSTED</span>`
-        : "";
+        ? `<span class="trusted-user">TRUSTED</span>` : "";
       const adminBadge = post.userId === "ADMIN"
         ? `<span class="admin-badge">ADMIN</span>` : "";
-      return `
-      <div class="post">
-        <div class="info">
-          <span class="user-id">&gt;${post.userId}</span> ${trustedBadge} ${adminBadge} &nbsp; ${dateStr}
+      const bannedBadge = bannedUserIds.includes(post.userId)
+        ? `<span class="banned-badge">BANNED</span>` : "";
+      let replyLinks = `<span class="reply-link" onclick="showReplyForm('${post.id}')">Reply</span>`;
+      let html = `
+        <div class="post${isSticky?' sticky':''}">
+          <div class="info">
+            <span class="user-id">&gt;${post.userId}</span> ${trustedBadge} ${adminBadge} ${bannedBadge} &nbsp; ${dateStr} ${isSticky?`<span style="font-weight:bold;color:var(--sticky-text);margin-left:10px;">STICKY</span>`:""}
+            ${replyLinks}
+          </div>
+          <div>${parseMarkdown(post.text)}</div>
         </div>
-        <div>${parseMarkdown(post.text)}</div>
-      </div>
       `;
-    }).join('');
+      // Show replies
+      const repliesForPost = replies.filter(r=>r.threadId===post.id);
+      if (repliesForPost.length) {
+        html += repliesForPost.map(r=>renderPost(r,false)).join('');
+      }
+      return html;
+    }
+    document.getElementById('stickyPosts').innerHTML = stickyPosts.map(p=>renderPost(p,true)).join('');
+    document.getElementById('posts').innerHTML = posts.map(p=>renderPost(p,false)).join('');
   }
-  loadPosts();
+  window.showReplyForm = function(parentId) {
+    replyTo = parentId;
+    document.getElementById('postForm').scrollIntoView({behavior:"smooth"});
+    document.getElementById('submitMsg').innerHTML = `<span style="color:var(--sticky-border);font-weight:bold;">Replying to: ${parentId}</span> <button onclick="replyTo=null;document.getElementById('submitMsg').innerText='';">Cancel</button>`;
+  };
 
   // --- Admin Login ---
   document.getElementById('adminLogin').onsubmit = async (e) => {
@@ -463,7 +679,6 @@
         loadAdminPanel();
         loadPosts();
       });
-      // Auto-refresh every 5 seconds
       if (adminPanelInterval) clearInterval(adminPanelInterval);
       adminPanelInterval = setInterval(loadAdminPanel, 5000);
     } catch (err) {
@@ -471,20 +686,25 @@
     }
   };
 
-  // --- Admin Panel: Approve/Reject/Trust Posts ---
+  // --- Admin Panel: Approve/Reject/Trust/Ban/Sticky/Unban ---
   async function loadAdminPanel() {
     await loadTrustedUsers();
+    await loadBanned();
     if (!adminUser) return;
+    // Pending
     const snap = await db.collection('posts')
       .where('approved', '==', false)
       .orderBy('timestamp', 'desc').get();
     const posts = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    // Banned
+    const bannedSnap = await db.collection("bannedUsers").get();
+    const banned = bannedSnap.docs.map(doc => ({id:doc.id, type:doc.data().type}));
     document.getElementById('adminPanel').innerHTML = `
       <div style="font-weight:600; color:var(--subtext); margin-bottom:8px;">
         Pending Posts <span class="admin-badge" style="float:right;">ADMIN</span>
       </div>
       ${posts.length === 0 ? "<div style='color:var(--subtext);'>No pending posts.</div>" : ""}
-      ${posts.map((post, i) => {
+      ${posts.map(post => {
         const dt = post.timestamp && post.timestamp.toDate
           ? post.timestamp.toDate()
           : new Date();
@@ -499,10 +719,12 @@
           : "";
         const adminBadge = post.userId === "ADMIN"
           ? `<span class="admin-badge">ADMIN</span>` : "";
+        const bannedBadge = bannedUserIds.includes(post.userId)
+          ? `<span class="banned-badge">BANNED</span>` : "";
         return `
         <div class="pending-post">
           <div class="info">
-            <span class="user-id">&gt;${post.userId}</span> ${trustedBadge} ${adminBadge} &nbsp; ${dateStr}
+            <span class="user-id">&gt;${post.userId}</span> ${trustedBadge} ${adminBadge} ${bannedBadge} &nbsp; ${dateStr}
           </div>
           <div>${parseMarkdown(post.text)}</div>
           <div style="font-size:0.88em; color:var(--subtext); margin-top:3px;">
@@ -512,55 +734,60 @@
             <button onclick="approvePost('${post.id}')">Approve</button>
             <button class="reject" onclick="rejectPost('${post.id}')">Reject</button>
             ${trustedUserIds.includes(post.userId) ? "" : `<button class="trust" onclick="trustUser('${post.userId}')">Trust User</button>`}
+            ${bannedUserIds.includes(post.userId) ? "" : `<button class="reject" onclick="banUser('${post.userId}','user')">Ban User</button>`}
+            ${bannedIPs.includes(post.ip) ? "" : `<button class="reject" onclick="banUser('${post.ip}','ip')">Ban IP</button>`}
+            <button class="sticky" onclick="makeSticky('${post.id}')">Sticky</button>
           </div>
         </div>
         `;
       }).join('')}
+      <div style="font-weight:600; color:var(--subtext); margin-top:16px;">Banned Users/IPs</div>
+      ${banned.length === 0 ? "<div style='color:var(--subtext);'>None.</div>" : ""}
+      ${banned.map(b => `
+        <div style="margin:7px 0;font-size:0.97em;">
+          <span class="banned-badge">${b.type === "user" ? "User" : "IP"}: ${b.id}</span>
+          <button class="unban" onclick="unban('${b.id}')">Unban</button>
+        </div>
+      `).join('')}
     `;
   }
-
   window.approvePost = async (id) => {
     await db.collection('posts').doc(id).update({ approved: true });
     loadAdminPanel();
     loadPosts();
   };
-
   window.rejectPost = async (id) => {
     await db.collection('posts').doc(id).delete();
     loadAdminPanel();
   };
-
   window.trustUser = async (userId) => {
     await db.collection('trustedUsers').doc(userId).set({ trusted: true });
     await loadTrustedUsers();
     loadAdminPanel();
     loadPosts();
   };
+  window.banUser = async (id,type) => {
+    await db.collection('bannedUsers').doc(id).set({type:type});
+    await loadBanned();
+    loadAdminPanel();
+  };
+  window.unban = async (id) => {
+    await db.collection('bannedUsers').doc(id).delete();
+    await loadBanned();
+    loadAdminPanel();
+  };
+  window.makeSticky = async (id) => {
+    await db.collection('posts').doc(id).update({ sticky: true, approved: true });
+    loadAdminPanel();
+    loadPosts();
+  };
 
-  firebase.auth().onAuthStateChanged(user => {
-    if (user) {
-      adminUser = user;
-      isAdmin = true;
-      document.getElementById('adminLoginBox').style.display = "none";
-      document.getElementById('adminPanel').style.display = "block";
-      document.getElementById('boardTitle').innerHTML = 'viabrd <span class="admin-badge">ADMIN</span>';
-      loadTrustedUsers().then(() => {
-        loadAdminPanel();
-        loadPosts();
-      });
-      // Auto-refresh every 5 seconds
-      if (adminPanelInterval) clearInterval(adminPanelInterval);
-      adminPanelInterval = setInterval(loadAdminPanel, 5000);
-    }
-  });
-
-  // --- Make admin panel draggable and resizable ---
+  // --- Draggable/Resizable Admin Panel ---
   (function() {
     const panel = document.getElementById('adminPanel');
     let dragging = false, offsetX = 0, offsetY = 0;
 
     panel.addEventListener('mousedown', function(e) {
-      // Only start drag if near header/top (first 35px)
       if (e.target === panel || e.offsetY < 35) {
         dragging = true;
         panel.classList.add('dragging');
@@ -586,13 +813,30 @@
       }
     });
 
-    // Keep panel inside window
     window.addEventListener('resize', function() {
       const rect = panel.getBoundingClientRect();
       if(rect.right > window.innerWidth) panel.style.left = (window.innerWidth - rect.width - 10) + "px";
       if(rect.bottom > window.innerHeight) panel.style.top = (window.innerHeight - rect.height - 10) + "px";
     });
   })();
+
+  // --- Initial Load ---
+  firebase.auth().onAuthStateChanged(user => {
+    if (user) {
+      adminUser = user;
+      isAdmin = true;
+      document.getElementById('adminLoginBox').style.display = "none";
+      document.getElementById('adminPanel').style.display = "block";
+      document.getElementById('boardTitle').innerHTML = 'viabrd <span class="admin-badge">ADMIN</span>';
+      loadTrustedUsers().then(() => {
+        loadAdminPanel();
+        loadPosts();
+      });
+      if (adminPanelInterval) clearInterval(adminPanelInterval);
+      adminPanelInterval = setInterval(loadAdminPanel, 5000);
+    }
+  });
+  loadPosts();
 </script>
 </body>
 </html>
