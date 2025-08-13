@@ -1,248 +1,234 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>viabrd - Hacker Text Board</title>
+  <title>viabrd - 4chan Style Text Board</title>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/10.2.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.2.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.2.0/firebase-firestore-compat.js"></script>
-  <!-- Google Fonts for Hacker Style -->
-  <link href="https://fonts.googleapis.com/css?family=Share+Tech+Mono|Montserrat:400,600&display=swap" rel="stylesheet">
+  <!-- Google Fonts for classic style -->
+  <link href="https://fonts.googleapis.com/css?family=Roboto+Mono:400,700|Noto+Sans:400,600&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #181c20;
-      --card: #23272b;
-      --accent: #36ff7a;
-      --accent-fade: #2ed469;
-      --glass: rgba(40,45,50,0.85);
-      --border: #1a242a;
-      --text-main: #e4f7db;
-      --text-sub: #7fffd4;
-      --text-fade: #36ff7a99;
+      --bkg: #d6ecc7;
+      --post: #f0e5c8;
+      --border: #b5cda3;
+      --info: #789262;
+      --admin: #f0e5c8;
+      --admin-border: #b5cda3;
+      --button: #8fc470;
+      --button-hover: #5fa03e;
+      --error: #c77;
+      --shadow: 0 2px 8px #b5cda388;
     }
     body {
-      font-family: 'Share Tech Mono', 'Montserrat', monospace, sans-serif;
-      background: var(--bg);
-      color: var(--text-main);
+      background: var(--bkg);
+      font-family: 'Noto Sans', Arial, sans-serif;
       margin: 0;
       padding: 0;
       min-height: 100vh;
-      box-sizing: border-box;
-      letter-spacing: 0.03em;
-    }
-    h1, h2 {
-      text-align: center;
-      margin-top: 30px;
-      font-weight: 600;
-      letter-spacing: 2px;
-      color: var(--accent);
-      text-shadow: 0 0 6px var(--accent-fade);
     }
     .board-title {
-      font-size: 2.2em;
-      margin-top: 38px;
-      font-family: 'Share Tech Mono', monospace;
-      text-shadow: 0 0 18px var(--accent-fade);
+      font-size: 2.1em;
+      font-weight: 700;
+      margin: 0;
+      padding: 18px 0 8px 0;
+      text-align: center;
+      color: #789262;
+      letter-spacing: 1px;
+      font-family: 'Roboto Mono', monospace;
+      text-shadow: 0 1px 0 #fff, 0 2px 0 #b5cda3;
     }
-    form {
-      background: var(--glass);
-      border-radius: 22px;
-      max-width: 520px;
-      margin: 22px auto 0 auto;
-      padding: 26px 30px;
-      box-shadow: 0 4px 24px #000a;
+    .container {
+      max-width: 700px;
+      margin: 0 auto;
+      padding: 0 10px;
+    }
+    .post-form {
+      background: var(--post);
+      border: 1.5px solid var(--border);
+      border-radius: 4px;
+      box-shadow: var(--shadow);
+      margin: 18px 0;
+      padding: 14px 14px 8px 14px;
       display: flex;
       flex-direction: column;
-      gap: 14px;
-      border: 2px solid var(--border);
-      backdrop-filter: blur(4px);
+      gap: 7px;
     }
-    textarea, input[type="email"], input[type="password"] {
-      border-radius: 14px;
-      border: 1px solid var(--accent-fade);
-      padding: 13px;
+    .post-form textarea {
+      font-family: 'Noto Sans', Arial, sans-serif;
       font-size: 1em;
-      background: #181c20de;
-      color: var(--text-main);
+      border: 1px solid var(--border);
+      border-radius: 4px;
       resize: vertical;
-      outline: none;
-      transition: border-color 0.18s;
-      font-family: 'Share Tech Mono', monospace;
-      box-shadow: 0 1px 8px #36ff7a10;
+      padding: 8px;
+      background: #fffde9;
     }
-    textarea:focus, input:focus {
-      border-color: var(--accent);
-      background: #232a2fde;
-    }
-    button {
-      background: linear-gradient(90deg,var(--accent) 0%,var(--accent-fade) 100%);
-      color: #111;
-      border:none;
-      border-radius: 14px;
-      padding: 11px 0;
-      font-weight: 700;
-      font-size: 1.08em;
+    .post-form button {
+      background: var(--button);
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      padding: 8px 0;
+      font-weight: 600;
+      font-size: 1em;
       cursor: pointer;
-      transition: background 0.18s, color 0.18s;
-      box-shadow: 0 2px 12px var(--accent-fade);
-      font-family: 'Montserrat', 'Share Tech Mono', monospace;
-      letter-spacing: 0.08em;
+      box-shadow: 0 1px 4px #b5cda388;
+      transition: background 0.18s;
     }
-    button:hover {
-      background: linear-gradient(90deg,#2ed469 0%,#36ff7a 100%);
-      color: var(--bg);
+    .post-form button:hover {
+      background: var(--button-hover);
+    }
+    .info {
+      color: var(--info);
+      font-size: 0.97em;
+      margin-bottom: 2px;
+      font-family: 'Roboto Mono', monospace;
+      letter-spacing: 0.5px;
     }
     .post {
-      background: var(--card);
-      border-radius: 22px;
-      box-shadow: 0 2px 18px #36ff7a18;
-      margin: 18px auto;
-      max-width: 500px;
-      padding: 21px 24px;
-      border: 1px solid var(--accent-fade);
+      background: var(--post);
+      border: 1.5px solid var(--border);
+      border-radius: 4px;
+      box-shadow: var(--shadow);
+      margin: 18px 0;
+      padding: 13px 14px 8px 14px;
       word-break: break-word;
-      transition: box-shadow 0.18s;
+      font-size: 1.06em;
       position: relative;
+      font-family: 'Noto Sans', Arial, sans-serif;
     }
-    .post:hover {
-      box-shadow: 0 4px 24px #36ff7a38;
-      border-color: var(--accent);
+    .post .info {
+      margin-bottom: 7px;
+      font-size: 0.97em;
+      color: var(--info);
     }
-    .admin {
-      background: var(--glass);
-      border-radius: 22px;
-      max-width: 520px;
-      margin: 26px auto;
-      padding: 26px 32px;
-      box-shadow: 0 4px 18px #36ff7a18;
-      border: 2px solid var(--border);
-      backdrop-filter: blur(4px);
-    }
-    .pending-list .post {
-      cursor: pointer;
-      border: 2px solid var(--accent-fade);
-      background: #252b29;
-      transition: background 0.18s, border 0.18s;
-    }
-    .pending-list .post:hover {
-      background: #1e2622;
-      border: 2px solid var(--accent);
-      box-shadow: 0 0 32px var(--accent-fade);
-    }
-    .popup-bg {
+    .admin-login {
       position: fixed;
-      top:0; left:0; width:100vw; height:100vh;
-      background: rgba(24,28,32,0.86);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 999;
-      backdrop-filter: blur(4px);
+      top: 14px;
+      right: 16px;
+      background: var(--admin);
+      border: 1.5px solid var(--admin-border);
+      border-radius: 8px;
+      box-shadow: 0 1px 8px #78926244;
+      padding: 12px 14px 8px 14px;
+      z-index: 100;
+      min-width: 170px;
+      max-width: 210px;
+      font-family: 'Roboto Mono', monospace;
     }
-    .popup {
-      background: #23272bfb;
-      border-radius: 20px;
-      box-shadow: 0 4px 32px #36ff7a28;
-      padding: 40px 30px 28px 30px;
-      max-width: 370px;
-      width: 97vw;
-      position: relative;
-      border: 2px solid var(--accent-fade);
-      color: var(--text-main);
-      font-family: 'Share Tech Mono', monospace;
+    .admin-login input[type="email"],
+    .admin-login input[type="password"] {
+      width: 98%;
+      margin-bottom: 6px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 5px;
+      background: #fffde9;
+      font-family: inherit;
+      font-size: 0.94em;
     }
-    .popup h3 {
-      margin-top: 0;
-      margin-bottom: 18px;
-      font-weight: 600;
-      font-size: 1.15em;
-      text-align: center;
-      color: var(--accent);
-      text-shadow: 0 0 8px var(--accent-fade);
-    }
-    .popup .buttons {
-      display: flex;
-      gap: 16px;
-      margin-top: 18px;
-      justify-content: center;
-    }
-    .popup .close {
-      position: absolute;
-      top: 10px;
-      right: 14px;
-      background: none;
+    .admin-login button {
+      background: var(--button);
+      color: #fff;
       border: none;
-      font-size: 1.7em;
-      color: var(--accent-fade);
-      cursor: pointer;
-      text-shadow: 0 0 8px var(--accent);
-    }
-    .popup-content-inner {
-      background: #181c20e3;
-      border-radius: 12px;
-      padding: 10px 16px;
-      margin: 7px 0;
-      font-size: 1.07em;
-      color: var(--text-main);
-      box-shadow: 0 1px 8px #36ff7a18;
-    }
-    .ua-ip {
-      font-size: 0.92em;
-      color: var(--text-fade);
-      margin-top: 6px;
-    }
-    .pending-indicator {
-      position: absolute;
-      top: 10px; right: 18px;
-      font-size: 0.95em;
-      color: var(--accent);
-      opacity: 0.5;
-      background: #181c20de;
-      border-radius: 6px;
-      padding: 2px 8px;
+      border-radius: 4px;
+      padding: 6px 0;
+      width: 100%;
       font-weight: 600;
-      letter-spacing: 0.04em;
+      font-size: 0.97em;
+      cursor: pointer;
+      box-shadow: 0 1px 4px #b5cda388;
+      margin-top: 3px;
+      transition: background 0.18s;
     }
-    @media (max-width:640px) {
-      .post, .admin, form { max-width: 98vw; padding: 14px; }
-      .popup { padding: 18px; }
+    .admin-login button:hover {
+      background: var(--button-hover);
+    }
+    .admin-panel {
+      max-width: 210px;
+      position: fixed;
+      top: 75px;
+      right: 20px;
+      background: var(--admin);
+      border: 1.5px solid var(--admin-border);
+      border-radius: 8px;
+      box-shadow: 0 1px 8px #78926244;
+      padding: 12px 12px 8px 12px;
+      font-size: 0.99em;
+      font-family: 'Roboto Mono', monospace;
+      z-index: 101;
+    }
+    .pending-post {
+      background: #e2ecd0;
+      border: 1.5px solid var(--border);
+      border-radius: 4px;
+      box-shadow: 0 1px 6px #b5cda388;
+      margin: 10px 0;
+      padding: 10px 12px 7px 12px;
+      word-break: break-word;
+      font-size: 1em;
+      position: relative;
+    }
+    .pending-post .info {
+      margin-bottom: 7px;
+      font-size: 0.96em;
+      color: var(--info);
+    }
+    .pending-post .moderate-btns {
+      display: flex;
+      gap: 8px;
+      margin-top: 7px;
+    }
+    .moderate-btns button {
+      background: var(--button);
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      padding: 5px 11px;
+      font-weight: 600;
+      font-size: 0.97em;
+      cursor: pointer;
+      box-shadow: 0 1px 4px #b5cda388;
+      transition: background 0.18s;
+    }
+    .moderate-btns button:hover {
+      background: var(--button-hover);
+    }
+    .moderate-btns .reject {
+      background: var(--error);
+    }
+    .moderate-btns .reject:hover {
+      background: #a33;
+    }
+    @media (max-width:750px) {
+      .container { max-width: 99vw; }
       .board-title { font-size: 1.3em; }
+      .post, .post-form { font-size: 1em; padding-left: 7px; padding-right: 7px; }
+      .admin-login, .admin-panel { max-width: 98vw; width: 180px; padding-left: 6px; padding-right: 6px; }
     }
   </style>
 </head>
 <body>
-  <h1 class="board-title">viabrd</h1>
-  <form id="postForm">
-    <textarea name="text" required placeholder="Type your hacky message..." rows="3"></textarea>
-    <button type="submit">Submit</button>
-  </form>
-  <div id="submitMsg" style="text-align:center; margin-bottom:16px;"></div>
-
-  <h2>Posts</h2>
-  <div id="posts"></div>
-
-  <hr style="margin:40px 0 0 0; border-color:#2ed469; opacity:.18;">
-  <h2>Admin Login</h2>
-  <form id="adminLogin">
-    <input name="email" type="email" required placeholder="Admin Email">
-    <input name="password" type="password" required placeholder="Password">
-    <button type="submit">Login</button>
-  </form>
-  <div id="adminPanel"></div>
-
-  <!-- Approve Popup -->
-  <div id="popupBg" class="popup-bg" style="display:none;">
-    <div class="popup" id="popup">
-      <button class="close" onclick="closePopup()">&times;</button>
-      <h3>Moderate Post</h3>
-      <div id="popupContent"></div>
-      <div class="buttons">
-        <button id="approveBtn" style="background:var(--accent);color:#111;">Approve</button>
-        <button id="rejectBtn" style="background:#d67171;color:#fff;">Reject</button>
-      </div>
-    </div>
+  <div class="board-title">viabrd</div>
+  <div class="admin-login" id="adminLoginBox">
+    <form id="adminLogin" autocomplete="off">
+      <input name="email" type="email" required placeholder="Admin Email">
+      <input name="password" type="password" required placeholder="Password">
+      <button type="submit">Login</button>
+    </form>
+    <div id="adminLoginMsg" style="color:var(--error); font-size:0.98em; margin-top:5px;"></div>
+  </div>
+  <div class="admin-panel" id="adminPanel" style="display:none;"></div>
+  <div class="container">
+    <form class="post-form" id="postForm">
+      <textarea name="text" required placeholder="Your post..." rows="3"></textarea>
+      <button type="submit">Submit Post</button>
+    </form>
+    <div id="submitMsg" style="text-align:center; margin-bottom:8px; font-size:1em; color:var(--info);"></div>
+    <div id="posts"></div>
   </div>
 <script>
   // Your Firebase config:
@@ -258,6 +244,13 @@
   firebase.initializeApp(firebaseConfig);
   const db = firebase.firestore();
 
+  // Generate a "user" random number per session: UNIX timestamp of first post
+  let userId = localStorage.getItem("viabrd_userId");
+  if (!userId) {
+    userId = "" + Math.floor(Date.now() / 1000);
+    localStorage.setItem("viabrd_userId", userId);
+  }
+
   // --- Submit Post ---
   document.getElementById('postForm').onsubmit = async (e) => {
     e.preventDefault();
@@ -269,11 +262,14 @@
       ip = (await res.json()).ip;
     } catch {}
     await db.collection('posts').add({
-      text, ua, ip,
+      text,
+      ua,
+      ip,
+      userId,
       approved: false,
       timestamp: firebase.firestore.FieldValue.serverTimestamp()
     });
-    document.getElementById('submitMsg').innerText = "✅ Submitted for approval!";
+    document.getElementById('submitMsg').innerText = "Submitted for approval!";
     e.target.reset();
   };
 
@@ -283,11 +279,25 @@
       .where('approved', '==', true)
       .orderBy('timestamp', 'desc').get();
     const posts = snap.docs.map(doc => doc.data());
-    document.getElementById('posts').innerHTML = posts.map(post => `
+    document.getElementById('posts').innerHTML = posts.map(post => {
+      const dt = post.timestamp && post.timestamp.toDate
+        ? post.timestamp.toDate()
+        : new Date();
+      const dateStr = dt.getFullYear() + "/" +
+        String(dt.getMonth()+1).padStart(2,"0") + "/" +
+        String(dt.getDate()).padStart(2,"0") + " " +
+        String(dt.getHours()).padStart(2,"0") + ":" +
+        String(dt.getMinutes()).padStart(2,"0") + ":" +
+        String(dt.getSeconds()).padStart(2,"0");
+      return `
       <div class="post">
-        <div class="popup-content-inner">${post.text}</div>
+        <div class="info">
+          <b>&gt;${post.userId}</b> &nbsp; ${dateStr}
+        </div>
+        <div>${post.text}</div>
       </div>
-    `).join('');
+      `;
+    }).join('');
   }
   loadPosts();
 
@@ -297,73 +307,73 @@
     e.preventDefault();
     const email = e.target.email.value;
     const password = e.target.password.value;
+    document.getElementById('adminLoginMsg').innerText = "";
     try {
       const userCred = await firebase.auth().signInWithEmailAndPassword(email, password);
       adminUser = userCred.user;
+      document.getElementById('adminLoginBox').style.display = "none";
+      document.getElementById('adminPanel').style.display = "block";
       loadAdminPanel();
     } catch (err) {
-      alert("Login failed");
+      document.getElementById('adminLoginMsg').innerText = "Login failed";
     }
   };
 
   // --- Admin Panel: Approve/Reject Posts ---
-  let pendingPosts = [];
   async function loadAdminPanel() {
     if (!adminUser) return;
     const snap = await db.collection('posts')
       .where('approved', '==', false)
       .orderBy('timestamp', 'desc').get();
-    pendingPosts = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const posts = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     document.getElementById('adminPanel').innerHTML = `
-      <div class="admin">
-        <h3 style="color:var(--accent);text-shadow:0 0 8px var(--accent-fade);">Pending Posts</h3>
-        <div class="pending-list">
-        ${pendingPosts.length === 0 ? "<div style='color:#7fffd4;'>No pending posts.</div>" : ""}
-        ${pendingPosts.map((post, i) => `
-          <div class="post" onclick="showPopup(${i})" title="Click to moderate">
-            <div class="popup-content-inner">${post.text}</div>
-            <div class="ua-ip"><b>UA:</b> ${post.ua}</div>
-            <div class="ua-ip"><b>IP:</b> ${post.ip}</div>
-            <span class="pending-indicator">Pending</span>
+      <div style="font-weight:600; color:var(--info); margin-bottom:8px;">Pending Posts</div>
+      ${posts.length === 0 ? "<div style='color:var(--info);'>No pending posts.</div>" : ""}
+      ${posts.map((post, i) => {
+        const dt = post.timestamp && post.timestamp.toDate
+          ? post.timestamp.toDate()
+          : new Date();
+        const dateStr = dt.getFullYear() + "/" +
+          String(dt.getMonth()+1).padStart(2,"0") + "/" +
+          String(dt.getDate()).padStart(2,"0") + " " +
+          String(dt.getHours()).padStart(2,"0") + ":" +
+          String(dt.getMinutes()).padStart(2,"0") + ":" +
+          String(dt.getSeconds()).padStart(2,"0");
+        return `
+        <div class="pending-post">
+          <div class="info">
+            <b>&gt;${post.userId}</b> &nbsp; ${dateStr}
           </div>
-        `).join('')}
+          <div>${post.text}</div>
+          <div style="font-size:0.88em; color:#7892629c; margin-top:3px;">
+            UA: ${post.ua}<br>IP: ${post.ip}
+          </div>
+          <div class="moderate-btns">
+            <button onclick="approvePost('${post.id}')">Approve</button>
+            <button class="reject" onclick="rejectPost('${post.id}')">Reject</button>
+          </div>
         </div>
-      </div>
+        `;
+      }).join('')}
     `;
   }
 
-  window.showPopup = function(idx) {
-    const post = pendingPosts[idx];
-    document.getElementById('popupBg').style.display = 'flex';
-    document.getElementById('popupContent').innerHTML = `
-      <div style="margin-bottom:14px;">
-        <div><b>Text:</b></div>
-        <div class="popup-content-inner" style="margin-bottom:8px;">
-          ${post.text}
-        </div>
-        <div class="ua-ip"><b>UA:</b> ${post.ua}</div>
-        <div class="ua-ip"><b>IP:</b> ${post.ip}</div>
-      </div>
-    `;
-    document.getElementById('approveBtn').onclick = async () => {
-      await db.collection('posts').doc(post.id).update({ approved: true });
-      closePopup();
-      loadAdminPanel();
-      loadPosts();
-    };
-    document.getElementById('rejectBtn').onclick = async () => {
-      await db.collection('posts').doc(post.id).delete();
-      closePopup();
-      loadAdminPanel();
-    };
-  }
-  window.closePopup = function() {
-    document.getElementById('popupBg').style.display = 'none';
+  window.approvePost = async (id) => {
+    await db.collection('posts').doc(id).update({ approved: true });
+    loadAdminPanel();
+    loadPosts();
+  };
+
+  window.rejectPost = async (id) => {
+    await db.collection('posts').doc(id).delete();
+    loadAdminPanel();
   };
 
   firebase.auth().onAuthStateChanged(user => {
     if (user) {
       adminUser = user;
+      document.getElementById('adminLoginBox').style.display = "none";
+      document.getElementById('adminPanel').style.display = "block";
       loadAdminPanel();
     }
   });
