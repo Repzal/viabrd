@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Text Board (Firebase)</title>
+  <meta charset="utf-8">
+  <script src="https://www.gstatic.com/firebasejs/10.2.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.2.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.2.0/firebase-firestore-compat.js"></script>
+  <style>
+    body { font-family: Arial; max-width: 600px; margin: 30px auto; }
+    .post { border: 1px solid #ccc; margin: 10px 0; padding: 10px; }
+    .admin { background: #f9f9f9; border: 1px solid #bbb; padding: 10px; }
+  </style>
+</head>
+<body>
+  <h1>Text Board</h1>
+  <form id="postForm">
+    <textarea name="text" required placeholder="Your post..." rows="3"></textarea><br>
+    <button type="submit">Submit Post</button>
+  </form>
+  <div id="submitMsg"></div>
+
+  <h2>Posts</h2>
+  <div id="posts"></div>
+
+  <hr>
+  <h2>Admin Login</h2>
+  <form id="adminLogin">
+    <input name="email" type="email" required placeholder="Admin Email">
+    <input name="password" type="password" required placeholder="Password">
+    <button type="submit">Login</button>
+  </form>
+  <div id="adminPanel"></div>
+
+<script>
+  // Your provided Firebase config:
+  const firebaseConfig = {
+    apiKey: "AIzaSyCaXgwoEVffniskfv-wUoZ3dHjVMomu3AM",
+    authDomain: "imageb-8e4d6.firebaseapp.com",
+    projectId: "imageb-8e4d6",
+    storageBucket: "imageb-8e4d6.firebasestorage.app",
+    messagingSenderId: "1095623245236",
+    appId: "1:1095623245236:web:223d6acb15efae062786e1"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+
+  // --- Submit Post ---
+  document.getElementById('postForm').onsubmit = async (e) => {
+    e.preventDefault();
+    const text = e.target.text.value;
+    const ua = navigator.userAgent;
+    let ip = "";
+    try {
+      const res = await fetch('https://api.ipify.org?format=json');
+      ip = (await res.json()).ip;
+    } catch {}
+    await db.collection('posts').add({
+      text, ua, ip,
+      approved: false,
+      timestamp: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    document.getElementById('submitMsg').innerText = "Submitted for approval!";
+    e.target.reset();
+  };
+
+  // --- Load Approved Posts ---
+  async function loadPosts() {
+    const snap = await db.collection('posts')
+      .where('approved', '==', true)
+      .orderBy('timestamp', 'desc').get();
+    const posts = snap.docs.map(doc => doc.data());
+    document.getElementById('posts').innerHTML = posts.map(post => `
+      <div class="post">
+        <div>${post.text}</div>
+      </div>
+    `).join('');
+  }
+  loadPosts();
+
+  // --- Admin Login ---
+  let adminUser = null;
+  document.getElementById('adminLogin').onsubmit = async (e) => {
+    e.preventDefault();
+    const email = e.target.email.value;
+    const password = e.target.password.value;
+    try {
+      const userCred = await firebase.auth().signInWithEmailAndPassword(email, password);
+      adminUser = userCred.user;
+      loadAdminPanel();
+    } catch (err) {
+      alert("Login failed");
+    }
+  };
+
+  // --- Admin Panel: Approve/Reject Posts ---
+  async function loadAdminPanel() {
+    if (!adminUser) return;
+    const snap = await db.collection('posts')
+      .where('approved', '==', false)
+      .orderBy('timestamp', 'desc').get();
+    const posts = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    document.getElementById('adminPanel').innerHTML = `
+      <div class="admin">
+        <h3>Pending Posts</h3>
+        ${posts.length === 0 ? "No pending posts." : ""}
+        ${posts.map(post => `
+          <div class="post">
+            <div>${post.text}</div>
+            <div><b>UA:</b> ${post.ua}</div>
+            <div><b>IP:</b> ${post.ip}</div>
+            <button onclick="approvePost('${post.id}')">Approve</button>
+            <button onclick="rejectPost('${post.id}')">Reject</button>
+          </div>
+        `).join('')}
+      </div>
+    `;
+  }
+
+  window.approvePost = async (id) => {
+    await db.collection('posts').doc(id).update({ approved: true });
+    loadAdminPanel();
+    loadPosts();
+  };
+  window.rejectPost = async (id) => {
+    await db.collection('posts').doc(id).delete();
+    loadAdminPanel();
+  };
+
+  firebase.auth().onAuthStateChanged(user => {
+    if (user) {
+      adminUser = user;
+      loadAdminPanel();
+    }
+  });
+</script>
+</body>
+</html>
